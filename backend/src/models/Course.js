@@ -9,6 +9,7 @@ teacher: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
 thumbnailUrl: String,
 studentsEnrolled: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+category: { type: String, required: true }
 }, { timestamps: true });
 
 

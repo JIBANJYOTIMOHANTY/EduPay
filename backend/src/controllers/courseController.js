@@ -8,7 +8,7 @@ import Enrollment from "../models/Enrollment.js";
 export const createCourse = async (req, res) => {
   try {
     const teacherId = req.user.id;
-    const { title, description, price, thumbnailUrl } = req.body;
+    const { title, description, price, thumbnailUrl, category } = req.body;
     console.log("Received course data:", req.body);
 
     // Validation
@@ -18,6 +18,10 @@ export const createCourse = async (req, res) => {
 
     if (price === undefined || price === null) {
       return res.status(400).json({ success: false, message: "Course price is required" });
+    }
+
+    if (!category || category.trim().length === 0) {
+      return res.status(400).json({ success: false, message: "Course category is required" });
     }
 
     // if (typeof price !== 'number' || price < 0) {
@@ -30,10 +34,12 @@ export const createCourse = async (req, res) => {
       price,
       thumbnailUrl: thumbnailUrl || null,
       teacher: teacherId,
+      category: category.trim().toLowerCase(),
     });
 
     res.status(201).json({ success: true, message: "Course created", course });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ success: false, message: "Server error", error });
   }
 };
@@ -41,11 +47,22 @@ export const createCourse = async (req, res) => {
 // Get all approved courses (Student View)
 export const getApprovedCourses = async (req, res) => {
   try {
-    const courses = await Course.find({ status: "approved" }).populate(
-      "teacher",
-      "name email"
-    );
-    res.json({ success: true, courses });
+    const courses = await Course.find({ status: "approved" })
+      .select("_id title description price category thumbnailUrl teacher")
+      .populate("teacher", "name email");
+    
+    // Ensure category is included in response (fallback to empty string if missing)
+    const coursesWithCategory = courses.map(course => ({
+      _id: course._id,
+      title: course.title,
+      description: course.description,
+      price: course.price,
+      category: course.category,
+      thumbnailUrl: course.thumbnailUrl,
+      teacher: course.teacher
+    }));
+    
+    res.json({ success: true, courses: coursesWithCategory });
   } catch (error) {
     res.status(500).json({ success: false, error });
   }
@@ -104,7 +121,7 @@ export const updateCourse = async (req, res) => {
   try {
     const teacherId = req.user.id;
     const { id } = req.params;
-    const { title, description, price, thumbnailUrl } = req.body;
+    const { title, description, price, thumbnailUrl, category } = req.body;
 
     // Validation
     if (title !== undefined && (!title || title.trim().length === 0)) {
@@ -113,6 +130,10 @@ export const updateCourse = async (req, res) => {
 
     if (price !== undefined && (typeof price !== 'number' || price < 0)) {
       return res.status(400).json({ success: false, message: "Course price must be a positive number" });
+    }
+
+    if (category !== undefined && (!category || category.trim().length === 0)) {
+      return res.status(400).json({ success: false, message: "Course category cannot be empty" });
     }
 
     const course = await Course.findOne({ _id: id, teacher: teacherId });
@@ -126,6 +147,7 @@ export const updateCourse = async (req, res) => {
     if (description !== undefined) updateData.description = description.trim();
     if (price !== undefined) updateData.price = price;
     if (thumbnailUrl !== undefined) updateData.thumbnailUrl = thumbnailUrl;
+    if (category !== undefined) updateData.category = category.trim().toLowerCase();
 
     const updated = await Course.findByIdAndUpdate(id, updateData, {
       new: true,
