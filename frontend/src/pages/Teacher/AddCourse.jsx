@@ -156,6 +156,7 @@ export default function AddCourse() {
                 <option value="business" className="bg-slate-800">Business</option>
                 <option value="marketing" className="bg-slate-800">Marketing</option>
                 <option value="data-science" className="bg-slate-800">Data Science</option>
+                <option value="data-science" className="bg-slate-800">Science</option>
               </select>
             </div>
 

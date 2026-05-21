@@ -1,7 +1,124 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchMyEnrollments } from "../../api/studentApi";
 import { sampleEnrollments, sampleStats } from "../../data/sampleData";
+import { AuthContext } from "../../contexts/AuthContextHelper";
+
+const BookOpenIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+  </svg>
+);
+
+const GridIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zm0 9.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zm9.75-9.75A2.25 2.25 0 0115.75 3.75H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zm0 9.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+  </svg>
+);
+
+const WalletIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a2.25 2.25 0 00-2.25-2.25H15a3 3 0 11-6 0H5.25A2.25 2.25 0 003 12m18 0v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6m18 0V9M3 12V9m18-3a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 9m18 0V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v3" />
+  </svg>
+);
+
+const TrophyIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 01-.982-3.172M9.497 14.25a7.454 7.454 0 00.981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 007.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 002.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 012.916.52 6.003 6.003 0 01-5.395 4.972m0 0a6.726 6.726 0 01-2.749 1.35m0 0a6.772 6.772 0 01-3.044 0" />
+  </svg>
+);
+
+const ChevronRightIcon = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+  </svg>
+);
+
+const SearchIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+  </svg>
+);
+
+const UserIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+  </svg>
+);
+
+const STAT_CARDS = [
+  {
+    key: "myCourses",
+    label: "My Courses",
+    badge: "Enrolled",
+    gradient: "from-blue-500 to-blue-600",
+    shadow: "shadow-blue-200",
+    icon: <BookOpenIcon />,
+  },
+  {
+    key: "availableCourses",
+    label: "Available",
+    badge: "Explore",
+    gradient: "from-violet-500 to-violet-600",
+    shadow: "shadow-violet-200",
+    icon: <GridIcon />,
+  },
+  {
+    key: "totalSpent",
+    label: "Total Invested",
+    badge: "Growth",
+    gradient: "from-emerald-500 to-emerald-600",
+    shadow: "shadow-emerald-200",
+    icon: <WalletIcon />,
+    format: (v) => `₹${v.toLocaleString()}`,
+  },
+  {
+    key: "completionRate",
+    label: "Completion",
+    badge: "Goal",
+    gradient: "from-orange-500 to-orange-600",
+    shadow: "shadow-orange-200",
+    icon: <TrophyIcon />,
+    format: (v) => `${v}%`,
+  },
+];
+
+const COURSE_COLORS = [
+  { gradient: "from-blue-400 to-blue-500", bar: "bg-blue-500" },
+  { gradient: "from-violet-400 to-violet-500", bar: "bg-violet-500" },
+  { gradient: "from-emerald-400 to-emerald-500", bar: "bg-emerald-500" },
+];
+
+const QUICK_ACTIONS = [
+  {
+    label: "Browse Courses",
+    desc: "Explore 100+ courses",
+    path: "/student/courses",
+    icon: <SearchIcon />,
+    gradient: "from-blue-500 to-blue-600",
+  },
+  {
+    label: "My Courses",
+    desc: "Continue learning",
+    path: "/student/my-courses",
+    icon: <BookOpenIcon />,
+    gradient: "from-violet-500 to-violet-600",
+  },
+  {
+    label: "My Profile",
+    desc: "Manage account",
+    path: "/student/profile",
+    icon: <UserIcon />,
+    gradient: "from-emerald-500 to-emerald-600",
+  },
+];
+
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  return "Good evening";
+}
 
 export default function StudentDashboard() {
   const [stats, setStats] = useState({
@@ -13,27 +130,29 @@ export default function StudentDashboard() {
   const [recentCourses, setRecentCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
+
+  const firstName = user?.name?.split(" ")[0] || "Student";
 
   useEffect(() => {
     async function loadStats() {
       try {
-        // Fetch from API
         const res = await fetchMyEnrollments();
         const courses = res.data?.enrollments || res.data || [];
-
         const totalSpent = courses.reduce((sum, e) => sum + (e.amountPaid || 0), 0);
-
         setStats({
           myCourses: courses.length,
           availableCourses: 12,
           totalSpent,
-          completionRate: courses.length > 0 ? Math.floor((courses.filter(c => c.status === "completed").length / courses.length) * 100) : 0,
+          completionRate:
+            courses.length > 0
+              ? Math.floor(
+                  (courses.filter((c) => c.status === "completed").length / courses.length) * 100
+                )
+              : 0,
         });
-
         setRecentCourses(courses.slice(0, 3));
-      } catch (err) {
-        console.error("Error fetching stats:", err);
-        // Fallback to sample data on error
+      } catch {
         setRecentCourses(sampleEnrollments.slice(0, 3));
         setStats({
           myCourses: sampleEnrollments.length,
@@ -49,194 +168,170 @@ export default function StudentDashboard() {
   }, []);
 
   return (
-    <div>
-      <div className="w-full">
-        {/* Header Section */}
-        <div className="mb-12">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-slate-900 via-purple-900 to-slate-900 bg-clip-text text-transparent">
-                Welcome back! 👋
-              </h1>
-              <p className="text-slate-600 mt-3 text-lg">Here's your learning journey at a glance</p>
-            </div>
-            {/* <button className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-3 rounded-xl font-semibold hover:shadow-lg hover:-translate-y-1 transition-all duration-300 whitespace-nowrap w-full sm:w-auto">
-              + New Course
-            </button> */}
+    <div className="space-y-8">
+      {/* Hero Banner */}
+      <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-violet-700 rounded-3xl p-8 overflow-hidden text-white">
+        <div className="absolute -top-12 -right-12 w-48 h-48 bg-white/10 rounded-full pointer-events-none" />
+        <div className="absolute -bottom-8 right-24 w-32 h-32 bg-white/10 rounded-full pointer-events-none" />
+        <div className="absolute top-4 right-4 w-16 h-16 bg-white/10 rounded-full pointer-events-none" />
+
+        <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+          <div>
+            <p className="text-blue-200 text-sm font-medium mb-1 tracking-wide">{getGreeting()},</p>
+            <h1 className="text-3xl lg:text-4xl font-bold">{firstName} 👋</h1>
+            <p className="text-blue-100 mt-2 text-sm">
+              Continue where you left off. Your future is one lesson away.
+            </p>
           </div>
+          <button
+            onClick={() => navigate("/student/courses")}
+            className="flex items-center gap-2 bg-white text-blue-700 font-semibold px-6 py-3 rounded-2xl hover:bg-blue-50 transition-all duration-200 shadow-lg w-fit shrink-0"
+          >
+            <SearchIcon />
+            Browse Courses
+          </button>
         </div>
+      </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {/* My Courses Card */}
-          <div className="group bg-white rounded-2xl p-7 shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-blue-300 hover:-translate-y-1">
-            <div className="flex items-start justify-between mb-4">
-              <div className="p-3 bg-blue-100 rounded-xl group-hover:bg-blue-200 transition-all">
-                <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20"><path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.669 0-3.218-.51-4.5-1.385A7.954 7.954 0 009 4.804z"/></svg>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {STAT_CARDS.map((card) => {
+          const raw = stats[card.key];
+          const display = card.format ? card.format(raw) : raw;
+          return (
+            <div
+              key={card.key}
+              className={`bg-gradient-to-br ${card.gradient} rounded-2xl p-5 text-white shadow-lg ${card.shadow}`}
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div className="p-2.5 bg-white/20 rounded-xl">{card.icon}</div>
+                <span className="text-xs font-semibold bg-white/20 px-2.5 py-1 rounded-full">
+                  {card.badge}
+                </span>
               </div>
-              <span className="text-2xl">📚</span>
+              <p className="text-3xl font-bold leading-none">{display}</p>
+              <p className="text-white/75 text-sm mt-1.5">{card.label}</p>
             </div>
-            <p className="text-slate-600 text-sm font-medium mb-2">My Courses</p>
-            <p className="text-4xl font-bold text-slate-900 mb-3">{stats.myCourses}</p>
-            <div className="h-1 bg-slate-100 rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-blue-400 to-blue-600 w-2/3"></div>
-            </div>
-          </div>
+          );
+        })}
+      </div>
 
-          {/* Available Courses Card */}
-          <div className="group bg-white rounded-2xl p-7 shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-green-300 hover:-translate-y-1">
-            <div className="flex items-start justify-between mb-4">
-              <div className="p-3 bg-green-100 rounded-xl group-hover:bg-green-200 transition-all">
-                <svg className="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path d="M10.5 1.5H3.75A2.25 2.25 0 001.5 3.75v12.5A2.25 2.25 0 003.75 18.5h12.5a2.25 2.25 0 002.25-2.25V9.5M6.5 6.5h7M6.5 10h7M6.5 13.5h3.5"/></svg>
-              </div>
-              <span className="text-2xl">🎓</span>
-            </div>
-            <p className="text-slate-600 text-sm font-medium mb-2">Available</p>
-            <p className="text-4xl font-bold text-slate-900 mb-3">{stats.availableCourses}</p>
-            <p className="text-sm text-green-600 font-semibold">Ready to explore</p>
-          </div>
-
-          {/* Total Invested Card */}
-          <div className="group bg-white rounded-2xl p-7 shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-purple-300 hover:-translate-y-1">
-            <div className="flex items-start justify-between mb-4">
-              <div className="p-3 bg-purple-100 rounded-xl group-hover:bg-purple-200 transition-all">
-                <svg className="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20"><path d="M8.5 10.5a2 2 0 11-4 0 2 2 0 014 0zM12.5 18.5h-2v-2a2 2 0 00-2-2h-3a2 2 0 00-2 2v2h-2v-6a2 2 0 012-2h6a2 2 0 012 2v6z"/></svg>
-              </div>
-              <span className="text-2xl">💰</span>
-            </div>
-            <p className="text-slate-600 text-sm font-medium mb-2">Total Invested</p>
-            <p className="text-3xl font-bold text-slate-900 mb-3">₹{stats.totalSpent.toLocaleString()}</p>
-            <p className="text-sm text-purple-600 font-semibold">In your education</p>
-          </div>
-
-          {/* Completion Rate Card */}
-          <div className="group bg-white rounded-2xl p-7 shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-orange-300 hover:-translate-y-1">
-            <div className="flex items-start justify-between mb-4">
-              <div className="p-3 bg-orange-100 rounded-xl group-hover:bg-orange-200 transition-all">
-                <svg className="w-6 h-6 text-orange-600" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 3.062v6.218c0 1.264-.586 2.459-1.596 3.228a6.988 6.988 0 01-1.18.627 6.987 6.987 0 01-4.854 0 6.988 6.988 0 01-1.18-.627c-1.01-.769-1.596-1.964-1.596-3.228V6.517a3.066 3.066 0 012.812-3.062z" clipRule="evenodd"/></svg>
-              </div>
-              <span className="text-2xl">✅</span>
-            </div>
-            <p className="text-slate-600 text-sm font-medium mb-2">Completion</p>
-            <p className="text-4xl font-bold text-slate-900 mb-3">{stats.completionRate}%</p>
-            <p className="text-sm text-orange-600 font-semibold">Keep it up!</p>
-          </div>
-        </div>
-
-        {/* Recent Courses Section */}
-        <div className="mb-12">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl lg:text-3xl font-bold text-slate-900">Recent Courses</h2>
+      {/* Recent Courses + Quick Actions */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Recent Courses — 2 cols */}
+        <div className="lg:col-span-2">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-slate-900">Recent Courses</h2>
             <button
               onClick={() => navigate("/student/my-courses")}
-              className="text-blue-600 hover:text-blue-700 text-sm font-semibold hover:underline transition"
+              className="flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-semibold transition"
             >
-              View All →
+              View all <ChevronRightIcon />
             </button>
           </div>
 
           {loading ? (
-            <div className="text-center py-16 bg-white rounded-2xl border border-slate-100">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-slate-500 font-medium">Loading your courses...</p>
+            <div className="bg-white rounded-2xl border border-slate-100 p-12 flex items-center justify-center">
+              <svg className="animate-spin w-8 h-8 text-blue-500" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
             </div>
           ) : recentCourses.length === 0 ? (
-            <div className="text-center py-16 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-200">
-              <svg className="w-16 h-16 text-blue-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v6m0 0v6m0-6h6m0 0h6M6 12a6 6 0 1112 0 6 6 0 01-12 0z" />
-              </svg>
-              <p className="text-slate-600 text-lg font-semibold mb-4">No courses yet. Start your learning journey!</p>
+            <div className="bg-white rounded-2xl border border-slate-100 p-12 text-center">
+              <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-blue-400">
+                <BookOpenIcon />
+              </div>
+              <p className="font-semibold text-slate-700 mb-1">No courses yet</p>
+              <p className="text-sm text-slate-500 mb-5">Start your learning journey today</p>
               <button
                 onClick={() => navigate("/student/courses")}
-                className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-3 rounded-xl hover:shadow-lg hover:-translate-y-1 font-semibold transition-all duration-300"
+                className="bg-blue-600 text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-blue-700 transition text-sm"
               >
                 Browse Courses
               </button>
             </div>
           ) : (
-            <div className="space-y-4">
-              {recentCourses.map((enrollment) => (
-                <div
-                  key={enrollment._id}
-                  className="bg-white rounded-2xl p-6 border border-slate-100 hover:border-blue-300 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div className="flex-1">
-                      <h3 className="font-bold text-lg text-slate-900 mb-3 group-hover:text-blue-600 transition">{enrollment.course?.title || "Course"}</h3>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium text-slate-600">Progress</span>
-                            <span className="text-sm font-bold text-blue-600">{enrollment.progress || 0}%</span>
-                          </div>
-                          <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
-                            <div
-                              className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-500"
-                              style={{ width: `${enrollment.progress || 0}%` }}
-                            ></div>
-                          </div>
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden divide-y divide-slate-50">
+              {recentCourses.map((enrollment, idx) => {
+                const color = COURSE_COLORS[idx % COURSE_COLORS.length];
+                return (
+                  <div
+                    key={enrollment._id}
+                    className="flex items-center gap-4 p-5 hover:bg-slate-50 transition-colors group cursor-pointer"
+                    onClick={() => navigate(`/course/${enrollment.course?._id}`)}
+                  >
+                    <div
+                      className={`w-11 h-11 rounded-xl bg-gradient-to-br ${color.gradient} flex items-center justify-center flex-shrink-0 text-white`}
+                    >
+                      <BookOpenIcon />
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-slate-900 truncate text-sm group-hover:text-blue-600 transition">
+                        {enrollment.course?.title || "Course"}
+                      </h3>
+                      <div className="flex items-center gap-2 mt-2">
+                        <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full ${color.bar} rounded-full transition-all duration-700`}
+                            style={{ width: `${enrollment.progress || 0}%` }}
+                          />
                         </div>
+                        <span className="text-xs font-medium text-slate-400 shrink-0 w-8 text-right">
+                          {enrollment.progress || 0}%
+                        </span>
                       </div>
                     </div>
-                    <div className="flex flex-row sm:flex-col items-center sm:items-end gap-3 sm:gap-2">
-                      <span className={`px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap ${
-                        enrollment.status === "active"
-                          ? "bg-green-100 text-green-700"
-                          : enrollment.status === "completed"
-                          ? "bg-blue-100 text-blue-700"
-                          : "bg-amber-100 text-amber-700"
-                      }`}>
+
+                    <div className="flex items-center gap-3 shrink-0">
+                      <span
+                        className={`hidden sm:inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${
+                          enrollment.status === "active"
+                            ? "bg-green-100 text-green-700"
+                            : enrollment.status === "completed"
+                            ? "bg-blue-100 text-blue-700"
+                            : "bg-amber-100 text-amber-700"
+                        }`}
+                      >
                         {enrollment.status}
                       </span>
-                      <button
-                        onClick={() => navigate(`/course/${enrollment.course?._id}`)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-semibold transition-all duration-300 hover:shadow-md text-sm"
-                      >
-                        Continue
-                      </button>
+                      <span className="text-slate-300 group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all">
+                        <ChevronRightIcon />
+                      </span>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          <button
-            onClick={() => navigate("/student/courses")}
-            className="group relative bg-gradient-to-br from-blue-600 to-blue-700 text-white p-8 rounded-2xl hover:shadow-xl hover:-translate-y-2 transition-all duration-300 overflow-hidden"
-          >
-            <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
-            <div className="relative">
-              <div className="text-4xl mb-3">🔍</div>
-              <p className="font-bold text-lg">Browse Courses</p>
-              <p className="text-sm text-blue-100 mt-2">Explore 100+ courses</p>
-            </div>
-          </button>
-          <button
-            onClick={() => navigate("/student/my-courses")}
-            className="group relative bg-gradient-to-br from-purple-600 to-purple-700 text-white p-8 rounded-2xl hover:shadow-xl hover:-translate-y-2 transition-all duration-300 overflow-hidden"
-          >
-            <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
-            <div className="relative">
-              <div className="text-4xl mb-3">📚</div>
-              <p className="font-bold text-lg">My Courses</p>
-              <p className="text-sm text-purple-100 mt-2">Continue learning</p>
-            </div>
-          </button>
-          <button
-            onClick={() => navigate("/student/profile")}
-            className="group relative bg-gradient-to-br from-green-600 to-green-700 text-white p-8 rounded-2xl hover:shadow-xl hover:-translate-y-2 transition-all duration-300 overflow-hidden"
-          >
-            <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
-            <div className="relative">
-              <div className="text-4xl mb-3">👤</div>
-              <p className="font-bold text-lg">My Profile</p>
-              <p className="text-sm text-green-100 mt-2">Manage account</p>
-            </div>
-          </button>
+        {/* Quick Actions — 1 col */}
+        <div>
+          <h2 className="text-xl font-bold text-slate-900 mb-4">Quick Actions</h2>
+          <div className="flex flex-col gap-3">
+            {QUICK_ACTIONS.map((action) => (
+              <button
+                key={action.label}
+                onClick={() => navigate(action.path)}
+                className="flex items-center gap-4 p-4 bg-white border border-slate-100 rounded-2xl hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-left group shadow-sm"
+              >
+                <div
+                  className={`p-2.5 bg-gradient-to-br ${action.gradient} rounded-xl text-white flex-shrink-0`}
+                >
+                  {action.icon}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-slate-900 text-sm">{action.label}</p>
+                  <p className="text-xs text-slate-500">{action.desc}</p>
+                </div>
+                <span className="text-slate-300 group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all">
+                  <ChevronRightIcon />
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>
