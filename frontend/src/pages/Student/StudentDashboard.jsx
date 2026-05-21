@@ -123,7 +123,7 @@ function getGreeting() {
 export default function StudentDashboard() {
   const [stats, setStats] = useState({
     myCourses: 0,
-    availableCourses: 12,
+    availableCourses: 0,
     totalSpent: 0,
     completionRate: 0,
   });
@@ -142,7 +142,7 @@ export default function StudentDashboard() {
         const totalSpent = courses.reduce((sum, e) => sum + (e.amountPaid || 0), 0);
         setStats({
           myCourses: courses.length,
-          availableCourses: 12,
+          availableCourses: res.data?.totalCourses || 0,
           totalSpent,
           completionRate:
             courses.length > 0
